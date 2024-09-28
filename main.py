@@ -57,13 +57,18 @@ def get_google_sheet(sheet_id, sheet_name):
     return worksheet
 
 # === Логика проверки авторизации пользователя ===
+# === Логика проверки авторизации пользователя ===
 def check_auth(sheet, employee_id, passport_digits):
-    data = sheet.get_all_records()  # Получаем все записи из таблицы
+    data = sheet.get_all_records()  # Получаем все записи из листа авторизации
     
     for record in data:
         if str(record['Номер табеля']) == employee_id and str(record['Последние цифры паспорта']) == passport_digits:
             return True  # Авторизация прошла успешно
     return False  # Авторизация не пройдена
+
+# Функция для получения листа авторизации
+def get_authorization_sheet():
+    return get_google_sheet(GOOGLE_SHEET_ID, "Авторизация")  # Лист авторизации
 
 # === Обработка команды /start ===
 @router.message(Command("start"))
@@ -155,11 +160,11 @@ async def authorize_user(message: types.Message, state: FSMContext):
     employee_id = user_data['employee_id']
     passport_digits = message.text
     
-    # Подключаемся к Google Sheet
-    sheet = get_google_sheet(GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
+    # Подключаемся к листу авторизации
+    auth_sheet = get_authorization_sheet()
     
     # Проверяем авторизацию
-    if check_auth(sheet, employee_id, passport_digits):
+    if check_auth(auth_sheet, employee_id, passport_digits):
         print(f"Authorized: Employee ID: {employee_id}")  # Логирование для отладки
         return employee_id  # Авторизация прошла успешно, возвращаем номер табеля
     else:
@@ -174,7 +179,7 @@ async def passport_digits_handler(message: types.Message, state: FSMContext):
     
     if employee_id:
         # Если авторизация прошла успешно, запрашиваем у пользователя выбор месяца
-        print("Authorization successful!")  # Логирование для отладки
+        print("Authorization successful!\n")  # Логирование для отладки
         await ask_for_period(message, state)
     else:
         # Если авторизация не прошла, сбрасываем состояние
