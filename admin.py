@@ -15,11 +15,27 @@ SERVICE_ACCOUNT_EMAIL = 'service-account@salary-bot-test.iam.gserviceaccount.com
 EXPECTED_HEADERS = ["Номер табеля", "ФИО", "Зарплата", "Налоги и удержания", "На руки"]
 EXPECTED_AUTH_HEADERS = ["Номер табеля", "Последние цифры паспорта", "ФИО"]
 
+# === Список разрешённых пользователей ===
+AUTHORIZED_USERS = [64621696]  # Здесь указываем ID пользователей, которым разрешено пользоваться командами
+
 # Инициализация бота и диспетчера
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 storage = MemoryStorage()  # Инициализируем MemoryStorage для хранения состояний
 dp = Dispatcher(storage=storage)
 router = Router()
+
+# === Проверка авторизован ли пользователь ===
+async def is_user_authorized(user_id, message: types.Message):
+    if user_id in AUTHORIZED_USERS:
+        # Если пользователь авторизован
+        print("Администратор авторизован")  # Выводим в консоль
+        await message.reply("Администратор авторизован")  # Сообщаем пользователю
+        return True
+    else:
+        # Если пользователь не авторизован
+        print(f"Несанкционированный вход от пользователя {user_id}")  # Выводим в консоль
+        await message.reply("У вас нет прав для использования этой команды")  # Сообщаем пользователю
+        return False
 
 # === Логика подключения к Google Таблице ===
 def get_google_sheet(sheet_id):
@@ -128,6 +144,12 @@ async def display_sheets_list(message: types.Message, other_sheets):
 # === Обработка команды /start для администратора ===
 @router.message(Command("start"))
 async def start_handler(message: types.Message):
+    user_id = message.from_user.id
+    
+    # Проверяем, авторизован ли пользователь
+    if not await is_user_authorized(user_id, message):
+        return  # Если пользователь не авторизован, выходим из функции
+    
     # Приветствие и запрос ссылки на таблицу
     await message.reply("Добро пожаловать! Пожалуйста, отправьте ссылку на таблицу для проверки.")
 
@@ -138,6 +160,12 @@ async def start_handler(message: types.Message):
 async def check_table_access_handler(message: types.Message):
     table_url = message.text
     table_id = extract_table_id(table_url)
+    
+    user_id = message.from_user.id
+    
+    # Проверяем, авторизован ли пользователь
+    if not await is_user_authorized(user_id, message):
+        return  # Если пользователь не авторизован, выходим из функции
     
     if not table_id:
         await message.reply("Не удалось извлечь ID таблицы. Убедитесь, что вы отправили правильную ссылку.")
