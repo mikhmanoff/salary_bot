@@ -10,9 +10,9 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from config.settings import TELEGRAM_BOT_TOKEN, GOOGLE_SHEET_ID, CREDENTIALS_FILE, FOLDER_ID
 from services.google_services import get_google_sheet, get_google_services
+from services.sheet_operations import get_month_sheets, get_employee_data, check_auth
 
 import asyncio
-import gspread
 import os
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -57,31 +57,6 @@ def get_sheets_from_file(file_id):
     # Собираем названия листов
     sheet_names = [sheet['properties']['title'] for sheet in sheets]
     return sheet_names
-
-# === Логика получения всех листов ===
-def get_month_sheets(sheet):
-    worksheets = sheet.worksheets()
-    # Возвращаем все листы, убираем лишние пробелы в их названиях, если есть
-    month_sheets = [ws.title.strip() for ws in worksheets]
-    return month_sheets
-
-# === Логика получения строки данных о пользователе ===
-def get_employee_data(sheet, employee_id):
-    data = sheet.get_all_records()
-    for record in data:
-        if str(record['Номер табеля']) == employee_id:
-            return record
-    return None
-
-# === Логика проверки авторизации пользователя ===
-def check_auth(sheet, employee_id, passport_digits):
-    data = sheet.get_all_records()
-    for record in data:
-        if 'Номер табеля' in record and 'Последние цифры паспорта' in record:
-            if str(record['Номер табеля']) == employee_id and str(record['Последние цифры паспорта']) == passport_digits:
-                return True
-    return False
-
 
 # === Логика создания callback-кнопок для выбора типа данных ===
 def create_salary_type_buttons():
