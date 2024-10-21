@@ -6,14 +6,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
+
+from config.settings import TELEGRAM_BOT_TOKEN, GOOGLE_SHEET_ID, CREDENTIALS_FILE, FOLDER_ID
 
 import asyncio
 import gspread
 import os
-
-load_dotenv()  # Загрузка переменных из .env
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
