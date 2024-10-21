@@ -6,16 +6,19 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-import asyncio
-
-import gspread
+from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 
-# === Глобальные переменные ===
-GOOGLE_SHEET_ID = '1fAxmOI-UoABBuzqA_7sETuLhI7MT_Wg6UJUTzyuZyT0'  # ID твоей Google Таблицы
-CREDENTIALS_FILE = 'credentials.json'
-TELEGRAM_BOT_TOKEN = '7675134427:AAHICyIgG53cSQBHRQ3BpYBgtFC6b_6oxgY'  # Укажи свой токен бота
-FOLDER_ID = '1BNATGC0XG8taXXGRQJKhDK0H5V9I-ebe'  # ID папки, где хранятся файлы с данными
+import asyncio
+import gspread
+import os
+
+load_dotenv()  # Загрузка переменных из .env
+
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
+CREDENTIALS_FILE = os.getenv('CREDENTIALS_FILE')
+FOLDER_ID = os.getenv('FOLDER_ID')
 
 # Инициализация бота и диспетчера
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
