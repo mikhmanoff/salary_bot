@@ -11,6 +11,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from config.settings import TELEGRAM_BOT_TOKEN, GOOGLE_SHEET_ID, CREDENTIALS_FILE, FOLDER_ID
 from services.google_services import get_google_sheet, get_google_services
 from services.sheet_operations import get_month_sheets, get_employee_data, check_auth
+from utils.keyboards import create_main_menu, create_salary_type_buttons, create_month_buttons
 
 import asyncio
 import os
@@ -58,28 +59,10 @@ def get_sheets_from_file(file_id):
     sheet_names = [sheet['properties']['title'] for sheet in sheets]
     return sheet_names
 
-# === Логика создания callback-кнопок для выбора типа данных ===
-def create_salary_type_buttons():
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Зарплата за месяц", callback_data="salary_month")],
-        [InlineKeyboardButton(text="Зарплата с начала года", callback_data="salary_year")],
-        [InlineKeyboardButton(text="Зарплата за период", callback_data="salary_period")]
-    ])
-    return keyboard
-
-# === Логика создания callback-кнопок с названиями месяцев ===
-def create_month_buttons(month_sheets):
-    keyboard = []  # Создаем пустой список для кнопок
-    for sheet in month_sheets:
-        button = InlineKeyboardButton(text=sheet.title(), callback_data=f"month_{sheet.title()}")
-  # Используем sheet.title для получения названия листа как строки
-        keyboard.append([button])  # Каждую кнопку добавляем как отдельный массив (одна кнопка на строке)
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-# === Обработка команды /start ===
+# Изменяем функцию старта на использование новой клавиатуры
 @router.message(Command("start"))
 async def start(message: types.Message, state: FSMContext):
-    await message.reply("Добро пожаловать! Выберите одну из опций:", reply_markup=main_menu)
+    await message.reply("Добро пожаловать! Выберите одну из опций:", reply_markup=create_main_menu())
 
 # === Обработка кнопки FAQ ===
 @router.message(lambda message: message.text == "FAQ")
